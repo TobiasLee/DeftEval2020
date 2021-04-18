@@ -9,7 +9,7 @@ BSZ=32
 
 
 OUTPUT_DIR=results/$MODEL-$LR-$BSZ
-CUDA_VISIBLE_DEVICES=$GPU python3 task1_bert.py --train_dir $TRAIN_DIR \
+CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --num_train_epochs $EPOCH \
          --output_dir $OUTPUT_DIR \
