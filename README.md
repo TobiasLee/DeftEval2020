@@ -2,18 +2,18 @@
 Deft Corpus Definition Extraction, SemEval2020 Task 6 
 
 ## Prepare environment
-``
+```
 conda create -n deft python=3.6
 conda activate deft
 conda install pytorch -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
 pip install -r requirements.txt 
-``
+```
 
 ## Sub Task 1
 
-Sentence Classification, classify the sentences into 1 (contain a definition ) or 0 (does not contain a definition)
+Sentence Classification, classify the sentences into 1 (contain a definition) or 0 (does not contain a definition)
 
-RoBERTa-base, running script 'run_task1.sh'
+RoBERTa-base, running script `run_task1.sh`
 
 ### Results
 |                       | eval_accuracy | eval_f1 | eval_loss | eval_precision | eval_recall |
