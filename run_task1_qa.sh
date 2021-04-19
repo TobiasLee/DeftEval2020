@@ -8,7 +8,7 @@ MODEL=roberta-base
 BSZ=32
 
 
-OUTPUT_DIR=results/$MODEL-$LR-$BSZ
+OUTPUT_DIR=results/qa-suffix-$MODEL-$LR-$BSZ
 CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --overwrite_cache \
@@ -22,5 +22,6 @@ CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
          --logging_steps 5 \
          --per_device_train_batch_size $BSZ \
          --per_device_eval_batch_size $BSZ \
-         --do_train --do_eval --warmup_ratio 0.1
+         --do_train --do_eval --warmup_ratio 0.1 \
+         --qa_type
 
