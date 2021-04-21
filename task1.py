@@ -171,8 +171,9 @@ def main():
 
     datasets = load_dataset('text', data_files={
         "train": [os.path.join(data_args.train_dir, k) for k in os.listdir(data_args.train_dir)],
-        "validation": [os.path.join(data_args.dev_dir, k) for k in
-                       os.listdir(data_args.dev_dir)]})
+        "validation": [os.path.join(data_args.dev_dir, k) for k in os.listdir(data_args.dev_dir)],
+        "test": [os.path.join(data_args.test_dir, k) for k in os.listdir(data_args.test_dir)]
+    })
     num_labels = 2  # binary classification
     # Labels
 
@@ -256,7 +257,7 @@ def main():
     if training_args.do_predict or data_args.test_dir is not None:
         if "test" not in datasets :
             raise ValueError("--do_predict requires a test dataset")
-        test_dataset = datasets[ "test"]
+        test_dataset = datasets["test"]
         if data_args.max_test_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_test_samples))
 
@@ -340,19 +341,26 @@ def main():
         test_datasets = [test_dataset]
 
         for test_dataset, task in zip(test_datasets, tasks):
-            # Removing the `label` columns because it contains -1 and Trainer won't like that.
-            test_dataset.remove_columns_("label")
-            predictions = trainer.predict(test_dataset=test_dataset).predictions
-            predictions = np.argmax(predictions, axis=1)
+            metrics = trainer.evaluate(eval_dataset=test_dataset)
 
-            output_test_file = os.path.join(training_args.output_dir, f"test_results_{task}.txt")
-            if trainer.is_world_process_zero():
-                with open(output_test_file, "w") as writer:
-                    logger.info(f"***** Test results {task} *****")
-                    writer.write("index\tprediction\n")
-                    for index, item in enumerate(predictions):
-                        item = label_list[item]
-                        writer.write(f"{index}\t{item}\n")
+            max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(test_dataset)
+            metrics["eval_samples"] = min(max_val_samples, len(test_dataset))
+
+            trainer.log_metrics("test", metrics)
+            trainer.save_metrics("test", metrics)
+            # Removing the `label` columns because it contains -1 and Trainer won't like that.
+            # test_dataset.remove_columns_("label")
+            # predictions = trainer.predict(test_dataset=test_dataset).predictions
+            # predictions = np.argmax(predictions, axis=1)
+            #
+            # output_test_file = os.path.join(training_args.output_dir, f"test_results_{task}.txt")
+            # if trainer.is_world_process_zero():
+            #     with open(output_test_file, "w") as writer:
+            #         logger.info(f"***** Test results {task} *****")
+            #         writer.write("index\tprediction\n")
+            #         for index, item in enumerate(predictions):
+            #             item = label_list[item]
+            #             writer.write(f"{index}\t{item}\n")
 
 
 def _mp_fn(index):
