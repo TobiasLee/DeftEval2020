@@ -74,7 +74,12 @@ class DataTrainingArguments:
     dev_dir: Optional[str] = field(
         default=None, metadata={"help": "A data dir of dev files."}
     )
+
     test_dir: Optional[str] = field(default=None, metadata={"help": "A data dir of test files."})
+    task_name: Optional[str] = field(default='deft_task1', metadata={"help": "A data dir of test files."})
+    qa_type: bool = field(
+        default=False, metadata={"help": "Whether to add a question at the beginning of the sentence."}
+    )
 
 
 @dataclass
@@ -214,11 +219,17 @@ def main():
 
     def preprocess_function(examples):
         # text mode examples, each line
-
-        sentence_1 = [line.strip().split("\t")[0] for line in examples['text']]
-        labels = [line.strip().split("\t")[-1] for line in examples['text']]
-
-        result = tokenizer((sentence_1,), padding=padding, max_length=max_seq_length, truncation=True)
+        if data_args.qa_type:
+            logger.info('-' * 10 + 'cast data into qa type' + '-' * 10)
+            sentence_1 = ['Does this sentence contain a definition?' for _ in range(len(examples['text']))]
+            sentence_2 = [line.strip().split("\t")[0].replace("\"", "") for line in examples['text']]
+            # args = ((sentence_1, sentence_2))
+            args = ((sentence_2, sentence_1))
+        else:
+            sentence_1 = [line.strip().split("\t")[0].replace("\"", "") for line in examples['text']]
+            args = ((sentence_1, ))
+        labels = [line.strip().split("\t")[-1].replace("\"", "") for line in examples['text']]
+        result = tokenizer(*args, padding=padding, max_length=max_seq_length, truncation=True)
         result["label"] = [label_to_id[l] for l in labels]
         return result
 
@@ -242,10 +253,10 @@ def main():
         if data_args.max_val_samples is not None:
             eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
 
-    if training_args.do_predict or data_args.task_name is not None or data_args.test_file is not None:
-        if "test" not in datasets and "test_matched" not in datasets:
+    if training_args.do_predict or data_args.test_dir is not None:
+        if "test" not in datasets :
             raise ValueError("--do_predict requires a test dataset")
-        test_dataset = datasets["test_matched" if data_args.task_name == "mnli" else "test"]
+        test_dataset = datasets[ "test"]
         if data_args.max_test_samples is not None:
             test_dataset = test_dataset.select(range(data_args.max_test_samples))
 
