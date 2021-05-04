@@ -80,6 +80,9 @@ class DataTrainingArguments:
     qa_type: bool = field(
         default=False, metadata={"help": "Whether to add a question at the beginning of the sentence."}
     )
+    question_position: Optional[str] = field(
+        default='suffix', metadata={"help": "Position of the question, can be chosen from ['prefix', 'suffix']."}
+    )
 
 
 @dataclass
@@ -222,10 +225,15 @@ def main():
         # text mode examples, each line
         if data_args.qa_type:
             logger.info('-' * 10 + 'cast data into qa type' + '-' * 10)
+            # sentence_1 = ['I like doing NLP homework.' for _ in range(len(examples['text']))]
             sentence_1 = ['Does this sentence contain a definition?' for _ in range(len(examples['text']))]
             sentence_2 = [line.strip().split("\t")[0].replace("\"", "") for line in examples['text']]
-            # args = ((sentence_1, sentence_2))
-            args = ((sentence_2, sentence_1))
+            if data_args.question_position == 'prefix':
+                args = ((sentence_1, sentence_2))
+            elif data_args.question_position == 'suffix':
+                args = ((sentence_2, sentence_1))
+            else:
+                raise ValueError("do not support such question_position: %s" % data_args.question_position)
         else:
             sentence_1 = [line.strip().split("\t")[0].replace("\"", "") for line in examples['text']]
             args = ((sentence_1, ))
