@@ -1,11 +1,11 @@
-GPU="0,1,2,3"
+GPU="2,3,4,5"
 TRAIN_DIR=data/train
 DEV_DIR=data/dev
 TEST_DIR=data/test
 EPOCH=3
 
 LR=2e-5
-MODEL=roberta-base
+MODEL=roberta-large
 BSZ=32
 
 
