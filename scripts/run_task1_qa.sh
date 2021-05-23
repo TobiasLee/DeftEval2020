@@ -1,7 +1,7 @@
 GPU="2,3,4,5"
-TRAIN_DIR=data/train
-DEV_DIR=data/dev
-TEST_DIR=data/test
+TRAIN_DIR=data/subtask1/train
+DEV_DIR=data/subtask1/dev
+TEST_DIR=data/subtask1/test
 EPOCH=3
 
 LR=2e-5
@@ -9,7 +9,7 @@ MODEL=roberta-large
 BSZ=32
 
 
-OUTPUT_DIR=results/qa-suffix-$MODEL-$LR-$BSZ
+OUTPUT_DIR=results/subtask1-qa-suffix-$MODEL-$LR-$BSZ
 CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --test_dir $TEST_DIR \

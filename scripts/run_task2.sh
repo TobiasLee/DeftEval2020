@@ -1,16 +1,16 @@
-GPU="1,2,3,4"
-TRAIN_DIR=data/subtask1/train
-DEV_DIR=data/subtask1/dev
-TEST_DIR=data/subtask1/test
+GPU="4,5,6,7"
+TRAIN_DIR=data/ori_data/train
+DEV_DIR=data/ori_data/dev
+TEST_DIR=data/subtask2/test
 EPOCH=3
 
 LR=2e-5
-MODEL=roberta-base
+MODEL=roberta-large
 BSZ=32
 
 
-OUTPUT_DIR=results/subtask1-bullshit-prefix-ablation-$MODEL-$LR-$BSZ
-CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
+OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ
+CUDA_VISIBLE_DEVICES=$GPU python3 task2.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --test_dir $TEST_DIR \
          --overwrite_cache \
@@ -24,5 +24,4 @@ CUDA_VISIBLE_DEVICES=$GPU python3 task1.py --train_dir $TRAIN_DIR \
          --logging_steps 5 \
          --per_device_train_batch_size $BSZ \
          --per_device_eval_batch_size $BSZ \
-         --do_train --do_eval --do_predict --warmup_ratio 0.1 \
-         --qa_type --question_position prefix
+         --do_train --do_eval --do_predict --warmup_ratio 0.1

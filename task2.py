@@ -22,7 +22,7 @@ from importlib import import_module
 from typing import Dict, List, Optional, Tuple
 import torch
 import numpy as np
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from seqeval.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch import nn
 from losses import DiceLoss, FocalLoss, LabelSmoothingCrossEntropy, CourageLoss
 from torch.nn import CrossEntropyLoss
@@ -40,7 +40,7 @@ from transformers import (
     DataCollatorForTokenClassification,
 )
 import random
-# from evaluation_util import *
+from task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 
 logger = logging.getLogger(__name__)
@@ -226,6 +226,8 @@ def main():
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
 
+    token_classification_task = NER()
+
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
@@ -245,18 +247,9 @@ def main():
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
-    datasets = load_dataset('text', data_files={
-        "train": [os.path.join(data_args.train_dir, k) for k in os.listdir(data_args.train_dir)][2:5],  # TODO del [:2]
-        "validation": [os.path.join(data_args.dev_dir, k) for k in os.listdir(data_args.dev_dir)][2:3],
-        "test": [os.path.join(data_args.test_dir, k) for k in os.listdir(data_args.test_dir)][2:3]
-    })
-    label_to_id = {'B-Alias-Term': 0, 'B-Alias-Term-frag': 1, 'B-Definition': 2, 'B-Definition-frag': 3,
-                   'B-Ordered-Definition': 4, 'B-Ordered-Term': 5, 'B-Qualifier': 6, 'B-Referential-Definition': 7,
-                   'B-Referential-Term': 8, 'B-Secondary-Definition': 9, 'B-Term': 10, 'B-Term-frag': 11,
-                   'I-Alias-Term': 12, 'I-Definition': 13, 'I-Definition-frag': 14, 'I-Ordered-Definition': 15,
-                   'I-Ordered-Term': 16, 'I-Qualifier': 17, 'I-Referential-Definition': 18, 'I-Referential-Term': 19,
-                   'I-Secondary-Definition': 20, 'I-Term': 21, 'I-Term-frag': 22, 'O': 23}
-    num_labels = len(label_to_id)
+    labels = token_classification_task.get_labels()
+    num_labels = len(labels)
+    label_map: Dict[int, str] = {i: label for i, label in enumerate(labels)}
     logger.info("num_labels: %d" % num_labels)
     # Labels
 
@@ -299,140 +292,71 @@ def main():
         )
     max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)
 
-    def preprocess_function(examples, cls_token_at_end=False, cls_token="[CLS]", cls_token_segment_id=1,
-                            sep_token="[SEP]", sep_token_extra=False, pad_on_left=False, pad_token=0,
-                            pad_token_segment_id=0, pad_token_label_id=-100, sequence_a_segment_id=0,
-                            mask_padding_with_zero=True):
-        features = {}
-        # text mode examples, each line
-        words = [line.strip().split("\t")[0].replace("\"", "") for line in examples['text'] if len(line) > 1]
-        word_labels = [line.strip().split("\t")[4].strip() for line in examples['text'] if len(line) > 1]
-        if data_args.qa_type:
-            # logger.info('-' * 10 + 'cast data into qa type' + '-' * 10)
-            hint_words = 'Extract name entities of definition in this sentence .'.split()  # 'I like doing NLP homework.'
-            hint_word_labels = ['O' for _ in hint_words]
-            if data_args.question_position == 'prefix':
-                words = hint_words + words
-                word_labels = hint_word_labels + word_labels
-            elif data_args.question_position == 'suffix':
-                words = words + hint_words
-                word_labels = word_labels + hint_word_labels
-            else:
-                raise ValueError("do not support such question_position: %s" % data_args.question_position)
-        tokens = []
-        label_ids = []
-        for word, label in zip(words, word_labels):
-            word_tokens = tokenizer.tokenize(word)
-            # bert-base-multilingual-cased sometimes output "nothing ([]) when calling tokenize with just a space.
-            if len(word_tokens) > 0:
-                tokens.extend(word_tokens)
-                # Use the real label id for the first token of the word, and padding ids for the remaining tokens
-                # label_ids.extend([label_to_id[label]] + [pad_token_label_id] * (len(word_tokens) - 1))
-                # Use the real label id for all the tokens  TODO
-                label_ids.extend([label_to_id[label]] * len(word_tokens))
-        # Account for [CLS] and [SEP] with "- 2" and with "- 3" for RoBERTa.
-        special_tokens_count = tokenizer.num_special_tokens_to_add()
-        if len(tokens) > max_seq_length - special_tokens_count:
-            tokens = tokens[: (max_seq_length - special_tokens_count)]
-            label_ids = label_ids[: (max_seq_length - special_tokens_count)]
-        # The convention in BERT is:
-        # (a) For sequence pairs:
-        #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
-        #  type_ids:   0   0  0    0    0     0       0   0   1  1  1  1   1   1
-        # (b) For single sequences:
-        #  tokens:   [CLS] the dog is hairy . [SEP]
-        #  type_ids:   0   0   0   0  0     0   0
-        #
-        # Where "type_ids" are used to indicate whether this is the first
-        # sequence or the second sequence. The embedding vectors for `type=0` and
-        # `type=1` were learned during pre-training and are added to the wordpiece
-        # embedding vector (and position vector). This is not *strictly* necessary
-        # since the [SEP] token unambiguously separates the sequences, but it makes
-        # it easier for the model to learn the concept of sequences.
-        #
-        # For classification tasks, the first vector (corresponding to [CLS]) is
-        # used as as the "sentence vector". Note that this only makes sense because
-        # the entire model is fine-tuned.
-        tokens += [sep_token]
-        label_ids += [pad_token_label_id]
-        if sep_token_extra:
-            # roberta uses an extra separator b/w pairs of sentences
-            tokens += [sep_token]
-            label_ids += [pad_token_label_id]
-
-        if cls_token_at_end:
-            tokens += [cls_token]
-            label_ids += [pad_token_label_id]
-        else:
-            tokens = [cls_token] + tokens
-            label_ids = [pad_token_label_id] + label_ids
-
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-
-        # The mask has 1 for real tokens and 0 for padding tokens. Only real
-        # tokens are attended to.
-        input_mask = [1 if mask_padding_with_zero else 0] * len(input_ids)
-
-        # Zero-pad up to the sequence length.
-        padding_length = max_seq_length - len(input_ids)
-        if pad_on_left:
-            input_ids = ([pad_token] * padding_length) + input_ids
-            input_mask = ([0 if mask_padding_with_zero else 1] * padding_length) + input_mask
-            label_ids = ([pad_token_label_id] * padding_length) + label_ids
-        else:
-            input_ids += [pad_token] * padding_length
-            input_mask += [0 if mask_padding_with_zero else 1] * padding_length
-            label_ids += [pad_token_label_id] * padding_length
-
-        assert len(input_ids) == max_seq_length
-        assert len(input_mask) == max_seq_length
-        assert len(label_ids) == max_seq_length
-
-        features['input_ids'] = input_ids
-        features['attention_mask'] = input_mask
-        features['label_ids'] = label_ids
-        return features
-
-    datasets = datasets.map(preprocess_function, batched=True, load_from_cache_file=not data_args.overwrite_cache,
-                            remove_columns=['text'])
     if training_args.do_train:
-        if "train" not in datasets:
-            raise ValueError("--do_train requires a train dataset")
-        train_dataset = datasets["train"]
-        if data_args.max_train_samples is not None:
-            train_dataset = train_dataset.select(range(data_args.max_train_samples))
+        train_dataset = TokenClassificationDataset(
+            token_classification_task=token_classification_task,
+            data_dir=data_args.train_dir,
+            tokenizer=tokenizer,
+            labels=labels,
+            model_type=config.model_type,
+            max_seq_length=max_seq_length,
+            overwrite_cache=data_args.overwrite_cache,
+            mode=Split.train,
+        )
 
     if training_args.do_eval:
-        if "validation" not in datasets and "validation_matched" not in datasets and 'test' not in datasets:
-            raise ValueError("--do_eval requires a validation dataset")
-
-        if "validation" in datasets:
-            eval_dataset = datasets["validation_matched" if data_args.task_name == "mnli" else "validation"]
-        else:
-            eval_dataset = datasets['test']
-
-        if data_args.max_val_samples is not None:
-            eval_dataset = eval_dataset.select(range(data_args.max_val_samples))
+        eval_dataset = TokenClassificationDataset(
+            token_classification_task=token_classification_task,
+            data_dir=data_args.dev_dir,
+            tokenizer=tokenizer,
+            labels=labels,
+            model_type=config.model_type,
+            max_seq_length=max_seq_length,
+            overwrite_cache=data_args.overwrite_cache,
+            mode=Split.dev,
+        )
 
     if training_args.do_predict or data_args.test_dir is not None:
-        if "test" not in datasets:
-            raise ValueError("--do_predict requires a test dataset")
-        test_dataset = datasets["test"]
-        if data_args.max_test_samples is not None:
-            test_dataset = test_dataset.select(range(data_args.max_test_samples))
+        test_dataset = TokenClassificationDataset(
+            token_classification_task=token_classification_task,
+            data_dir=data_args.test_dir,
+            tokenizer=tokenizer,
+            labels=labels,
+            model_type=config.model_type,
+            max_seq_length=max_seq_length,
+            overwrite_cache=data_args.overwrite_cache,
+            mode=Split.test,
+        )
 
     # Log a few random samples from the training set:
     if training_args.do_train:
         for index in random.sample(range(len(train_dataset)), 3):
             logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
 
-    def compute_metrics(p: EvalPrediction):
-        preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-        preds = np.argmax(preds, axis=2)
-        return {'f1': f1_score(y_true=p.label_ids, y_pred=preds),
-                "precision": precision_score(y_true=p.label_ids, y_pred=preds),
-                "recall": recall_score(y_true=p.label_ids, y_pred=preds),
-                "accuracy": accuracy_score(y_true=p.label_ids, y_pred=preds)}
+    def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
+        preds = np.argmax(predictions, axis=2)
+
+        batch_size, seq_len = preds.shape
+
+        out_label_list = [[] for _ in range(batch_size)]
+        preds_list = [[] for _ in range(batch_size)]
+
+        for i in range(batch_size):
+            for j in range(seq_len):
+                if label_ids[i, j] != nn.CrossEntropyLoss().ignore_index:
+                    out_label_list[i].append(label_map[label_ids[i][j]])
+                    preds_list[i].append(label_map[preds[i][j]])
+
+        return preds_list, out_label_list
+
+    def compute_metrics(p: EvalPrediction) -> Dict:
+        preds_list, out_label_list = align_predictions(p.predictions, p.label_ids)
+        return {
+            "accuracy_score": accuracy_score(out_label_list, preds_list) * 100,
+            "precision": precision_score(out_label_list, preds_list) * 100,
+            "recall": recall_score(out_label_list, preds_list) * 100,
+            "f1": f1_score(out_label_list, preds_list) * 100,
+        }
 
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
     if data_args.pad_to_max_length:
