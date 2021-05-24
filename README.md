@@ -45,3 +45,14 @@ RoBERTa-base, running script `run_task1.sh`
 | qa-suffix-bullshit-RoBERTa-base | 0.8626 | 0.787 | 0.367 | 0.7927 | 0.7814 |
 | RoBERTa-large-rsh | 0.8661 | 0.8007 | 0.3613 | 0.7752 | 0.828 |
 | qa-suffix-RoBERTa-large | 0.8719 | 0.8022 | 0.3472 | 0.8051 | 0.7993 |
+
+
+### Subtask3 Results
+
+| Method |  F1-score | 
+| ------ | --------- |
+| RoBERTa-base|0.87813483055756        |
+|RoBERTa-large|  0.865632659860      |
+|RoBERTa-base-qa-suffix| 0.713576225656  |
+|RoBERTa-base-qa-prefix | 0.73096640116   |
+

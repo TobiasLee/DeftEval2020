@@ -281,9 +281,7 @@ def main():
     def compute_metrics(p: EvalPrediction):
         preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds = np.argmax(preds, axis=1)
-        return {'f1': f1_score(y_true=p.label_ids, y_pred=preds),
-                "precision": precision_score(y_true=p.label_ids, y_pred=preds),
-                "recall": recall_score(y_true=p.label_ids, y_pred=preds),
+        return {'f1': f1_score(y_true=p.label_ids, y_pred=preds, average='macro'),
                 "accuracy": accuracy_score(y_true=p.label_ids, y_pred=preds)}
 
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
