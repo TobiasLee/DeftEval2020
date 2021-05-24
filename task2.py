@@ -457,7 +457,9 @@ def main():
             'B-Term', 'I-Term', 'B-Definition', 'I-Definition', 'B-Alias-Term', 'I-Alias-Term',
             'B-Referential-Definition', 'I-Referential-Definition', 'B-Referential-Term', 'I-Referential-Term',
             'B-Qualifier', 'I-Qualifier'))
-            logger.info(report)
+            for k, v in report.items():
+                values = list(v.values())
+                print('| %s | %.4f | %.4f | %.4f | %d |' % (k, values[0], values[1], values[2], values[3]))
             write_to_scores(report, Path(training_args.output_dir).joinpath('scores.txt'))
 
 
