@@ -10,6 +10,17 @@ from dataclasses import dataclass
 from transformers import PreTrainedTokenizer, is_torch_available
 from filelock import FileLock
 
+eval_labels = ['B-Term', 'I-Term', 'B-Definition', 'I-Definition', 'B-Alias-Term', 'I-Alias-Term',
+               'B-Referential-Definition', 'I-Referential-Definition', 'B-Referential-Term', 'I-Referential-Term',
+               'B-Qualifier', 'I-Qualifier', 'O']
+
+training_labels = ['B-Alias-Term', 'B-Alias-Term-frag', 'B-Definition', 'B-Definition-frag', 'B-Ordered-Definition',
+                   'B-Ordered-Term', 'B-Qualifier', 'B-Referential-Definition', 'B-Referential-Term',
+                   'B-Secondary-Definition', 'B-Term', 'B-Term-frag', 'I-Alias-Term', 'I-Definition',
+                   'I-Definition-frag', 'I-Ordered-Definition', 'I-Ordered-Term', 'I-Qualifier',
+                   'I-Referential-Definition', 'I-Referential-Term', 'I-Secondary-Definition', 'I-Term', 'I-Term-frag',
+                   'O']
+
 
 @dataclass
 class InputExample:
@@ -185,9 +196,10 @@ class TokenClassificationTask:
 
 
 class NER(TokenClassificationTask):
-    def __init__(self, label_idx=4):
+    def __init__(self, label_idx=4, use_eval_labels=True):
         # in NER datasets, the last column is usually reserved for NER label
         self.label_idx = label_idx
+        self.use_eval_labels = use_eval_labels
 
     def read_examples_from_file(self, data_dir, mode: Union[Split, str]) -> List[InputExample]:
         if isinstance(mode, Split):
@@ -195,6 +207,7 @@ class NER(TokenClassificationTask):
         file_paths = [os.path.join(data_dir, k) for k in os.listdir(data_dir) if not k.startswith('cached')]
         guid_index = 1
         examples = []
+        final_label_set = set()
         for file_path in file_paths:
             with open(file_path, 'r', encoding="utf-8") as f:
                 words = []
@@ -210,12 +223,20 @@ class NER(TokenClassificationTask):
                         splits = line.split("\t")
                         words.append(splits[0])
                         if len(splits) > 1:
-                            labels.append(splits[self.label_idx].strip())
+                            exact_label = splits[self.label_idx].strip()
+                            if self.use_eval_labels:
+                                exact_label = exact_label if exact_label in eval_labels else 'O'
+                            labels.append(exact_label)
+                            final_label_set.add(exact_label)
                         else:
                             # Examples could have no label for mode = "test"
                             labels.append("O")
                 if words:
                     examples.append(InputExample(guid=f"{mode}-{guid_index}", words=words, labels=labels))
+        if self.use_eval_labels:
+            assert final_label_set == set(eval_labels), final_label_set
+        else:
+            assert final_label_set == set(training_labels), final_label_set
         return examples
 
     def write_predictions_to_file(self, writer: TextIO, test_input_reader: TextIO, preds_list: List):
@@ -239,12 +260,10 @@ class NER(TokenClassificationTask):
                 labels = ["O"] + labels
             return labels
         else:
-            return ['B-Alias-Term', 'B-Alias-Term-frag', 'B-Definition', 'B-Definition-frag', 'B-Ordered-Definition',
-                    'B-Ordered-Term', 'B-Qualifier', 'B-Referential-Definition', 'B-Referential-Term',
-                    'B-Secondary-Definition', 'B-Term', 'B-Term-frag', 'I-Alias-Term', 'I-Definition',
-                    'I-Definition-frag', 'I-Ordered-Definition', 'I-Ordered-Term', 'I-Qualifier',
-                    'I-Referential-Definition', 'I-Referential-Term', 'I-Secondary-Definition', 'I-Term', 'I-Term-frag',
-                    'O']
+            if self.use_eval_labels:
+                return eval_labels
+            else:
+                return training_labels
 
 
 if is_torch_available():
@@ -291,7 +310,8 @@ if is_torch_available():
             lock_path = cached_features_file + ".lock"
             with FileLock(lock_path):
 
-                if os.path.exists(cached_features_file) and os.path.exists(cached_examples_file) and not overwrite_cache:
+                if os.path.exists(cached_features_file) and os.path.exists(
+                        cached_examples_file) and not overwrite_cache:
                     logger.info(f"Loading features from cached file {cached_features_file}")
                     self.features = torch.load(cached_features_file)
                     logger.info(f"Loading examples from cached file {cached_examples_file}")

@@ -51,7 +51,7 @@ RoBERTa-base, running script `run_task1.sh`
 #### Results on test
 ```
 RoBERTa-large
-max_sequence_length=64
+max_sequence_length=64, epoch=3, lr=2e-5
 set predicted label not in the eval_label_list to 'O'
 ```
 
@@ -72,3 +72,51 @@ set predicted label not in the eval_label_list to 'O'
 | micro avg | 0.7053 | 0.7331 | 0.7190 | 5400 |
 | macro avg | 0.4103 | 0.4498 | 0.4281 | 5400 |
 | weighted avg | 0.7046 | 0.7331 | 0.7184 | 5400 |
+```
+RoBERTa-large
+max_sequence_length=64, epoch=3, lr=2e-5
+set training/dev/test/predicted label not in the eval_label_list to 'O'
+```
+
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7492 | 0.6821 | 0.7141 | 346 |
+| I-Term | 0.6996 | 0.6433 | 0.6702 | 485 |
+| B-Definition | 0.6702 | 0.6077 | 0.6374 | 311 |
+| I-Definition | 0.7448 | 0.7181 | 0.7312 | 4108 |
+| B-Alias-Term | 0.5769 | 0.7500 | 0.6522 | 40 |
+| I-Alias-Term | 0.3514 | 0.4062 | 0.3768 | 32 |
+| B-Referential-Definition | 0.6250 | 0.6250 | 0.6250 | 16 |
+| I-Referential-Definition | 0.7143 | 0.9091 | 0.8000 | 44 |
+| B-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 5 |
+| I-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
+| O | 0.9113 | 0.9242 | 0.9177 | 16586 |
+| accuracy | 0.8691 |
+| macro avg | 0.4648 | 0.4820 | 0.4711 | 21986 |
+| weighted avg | 0.8668 | 0.8691 | 0.8678 | 21986 |
+```
+RoBERTa-large
+max_sequence_length=128, epoch=10, lr=3e-5
+set training/dev/test/predicted label not in the eval_label_list to 'O'
+```
+
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7419 | 0.7270 | 0.7344 | 348 |
+| I-Term | 0.7056 | 0.6694 | 0.6870 | 487 |
+| B-Definition | 0.6557 | 0.6410 | 0.6483 | 312 |
+| I-Definition | 0.7642 | 0.7646 | 0.7644 | 4184 |
+| B-Alias-Term | 0.7143 | 0.7500 | 0.7317 | 40 |
+| I-Alias-Term | 0.3542 | 0.5312 | 0.4250 | 32 |
+| B-Referential-Definition | 0.7000 | 0.8750 | 0.7778 | 16 |
+| I-Referential-Definition | 0.7000 | 0.9545 | 0.8077 | 44 |
+| B-Referential-Term | 0.1818 | 0.4000 | 0.2500 | 5 |
+| I-Referential-Term | 0.1250 | 0.1111 | 0.1176 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
+| O | 0.9279 | 0.9269 | 0.9274 | 16936 |
+| accuracy | 0.8825 |
+| macro avg | 0.5054 | 0.5654 | 0.5286 | 22417 |
+| weighted avg | 0.8834 | 0.8825 | 0.8828 | 22417 |

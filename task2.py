@@ -40,7 +40,7 @@ from transformers import (
     DataCollatorForTokenClassification,
 )
 import random
-from utils.task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER
+from utils.task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER, eval_labels
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from utils.official_evaluation_task2 import task_2_eval_main, reimplemented_evaluate, write_to_scores
 from pathlib import Path
@@ -228,7 +228,7 @@ def main():
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
 
-    token_classification_task = NER()
+    token_classification_task = NER(use_eval_labels=True)
 
     # Setup logging
     logging.basicConfig(
@@ -453,13 +453,13 @@ def main():
 
         if trainer.is_world_process_zero():
             logger.info("running DEFT subtask2 Evaluation")
-            report = reimplemented_evaluate(y_gold=y_gold, y_pred=y_pred, eval_labels=(
-            'B-Term', 'I-Term', 'B-Definition', 'I-Definition', 'B-Alias-Term', 'I-Alias-Term',
-            'B-Referential-Definition', 'I-Referential-Definition', 'B-Referential-Term', 'I-Referential-Term',
-            'B-Qualifier', 'I-Qualifier'))
+            report = reimplemented_evaluate(y_gold=y_gold, y_pred=y_pred, eval_labels=eval_labels)
             for k, v in report.items():
-                values = list(v.values())
-                print('| %s | %.4f | %.4f | %.4f | %d |' % (k, values[0], values[1], values[2], values[3]))
+                if isinstance(v, dict):
+                    values = list(v.values())
+                    print('| %s | %.4f | %.4f | %.4f | %d |' % (k, values[0], values[1], values[2], values[3]))
+                else:
+                    print('| %s | %.4f |' % (k, v))
             write_to_scores(report, Path(training_args.output_dir).joinpath('scores.txt'))
 
 
