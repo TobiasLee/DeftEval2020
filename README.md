@@ -47,6 +47,8 @@ RoBERTa-base, running script `run_task1.sh`
 | qa-suffix-RoBERTa-large | 0.8719 | 0.8022 | 0.3472 | 0.8051 | 0.7993 |
 
 
+
+
 ## Subtask 2
 #### Results on test
 ```
@@ -120,3 +122,15 @@ set training/dev/test/predicted label not in the eval_label_list to 'O'
 | accuracy | 0.8825 |
 | macro avg | 0.5054 | 0.5654 | 0.5286 | 22417 |
 | weighted avg | 0.8834 | 0.8825 | 0.8828 | 22417 |
+
+
+##  Subtask3 
+#### Results on test
+
+| Method |  F1-score | 
+| ------ | --------- |
+| RoBERTa-base|0.87813483055756        |
+|RoBERTa-large|  0.865632659860      |
+|RoBERTa-base-qa-suffix| 0.713576225656  |
+|RoBERTa-base-qa-prefix | 0.73096640116   |
+
