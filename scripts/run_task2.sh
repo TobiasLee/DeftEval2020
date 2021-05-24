@@ -2,14 +2,14 @@ GPU="4,5,6,7"
 TRAIN_DIR=data/ori_data/train
 DEV_DIR=data/ori_data/dev
 TEST_DIR=data/subtask2/test
-EPOCH=3
+EPOCH=10
 
-LR=2e-5
+LR=3e-5
 MODEL=roberta-large
 BSZ=32
 
 
-OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ
+OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ-$EPOCH-evallabels
 CUDA_VISIBLE_DEVICES=$GPU python3 task2.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --test_dir $TEST_DIR \
