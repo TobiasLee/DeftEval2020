@@ -40,9 +40,9 @@ from transformers import (
     DataCollatorForTokenClassification,
 )
 import random
-from task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER
+from utils.task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
-from official_evaluation_task2 import task_2_eval_main, reimplemented_evaluate, write_to_scores
+from utils.official_evaluation_task2 import task_2_eval_main, reimplemented_evaluate, write_to_scores
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
