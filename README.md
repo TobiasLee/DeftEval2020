@@ -82,7 +82,7 @@ set predicted label not in the eval_label_list to 'O'
 
 | Method |  F1-score | 
 | ------ | --------- |
-| RoBERTa-base|0.87813483055756        |
+| RoBERTa-base-bsz32-epoch3|0.87813483055756        |
 | RoBERTa-base-bsz16-epoch5| 0.8549 |
 |RoBERTa-large-bsz16-epoch5|  0.865632659860      |
 |RoBERTa-base-qa-suffix| 0.713576225656  |
