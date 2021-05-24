@@ -9,7 +9,7 @@ conda install pytorch -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pyt
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-## Sub Task 1
+## Subtask 1
 
 Sentence Classification, classify the sentences into 1 (contain a definition) or 0 (does not contain a definition)
 
@@ -47,7 +47,38 @@ RoBERTa-base, running script `run_task1.sh`
 | qa-suffix-RoBERTa-large | 0.8719 | 0.8022 | 0.3472 | 0.8051 | 0.7993 |
 
 
-### Subtask3 Results
+
+
+## Subtask 2
+#### Results on test
+```
+RoBERTa-large
+max_sequence_length=64
+set predicted label not in the eval_label_list to 'O'
+```
+
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7040 | 0.7630 | 0.7323 | 346 |
+| I-Term | 0.6847 | 0.7299 | 0.7066 | 485 |
+| B-Definition | 0.5988 | 0.6527 | 0.6246 | 311 |
+| I-Definition | 0.7224 | 0.7429 | 0.7325 | 4108 |
+| B-Alias-Term | 0.6316 | 0.6000 | 0.6154 | 40 |
+| I-Alias-Term | 0.2667 | 0.3750 | 0.3117 | 32 |
+| B-Referential-Definition | 0.5882 | 0.6250 | 0.6061 | 16 |
+| I-Referential-Definition | 0.7273 | 0.9091 | 0.8081 | 44 |
+| B-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 5 |
+| I-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
+| micro avg | 0.7053 | 0.7331 | 0.7190 | 5400 |
+| macro avg | 0.4103 | 0.4498 | 0.4281 | 5400 |
+| weighted avg | 0.7046 | 0.7331 | 0.7184 | 5400 |
+
+
+
+##  Subtask3 
+#### Results on test
 
 | Method |  F1-score | 
 | ------ | --------- |
@@ -55,4 +86,3 @@ RoBERTa-base, running script `run_task1.sh`
 |RoBERTa-large|  0.865632659860      |
 |RoBERTa-base-qa-suffix| 0.713576225656  |
 |RoBERTa-base-qa-prefix | 0.73096640116   |
-
