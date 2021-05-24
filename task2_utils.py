@@ -25,6 +25,7 @@ class InputExample:
     guid: str
     words: List[str]
     labels: Optional[List[str]]
+    tokens: List[str] = None
 
 
 @dataclass
@@ -70,7 +71,7 @@ class TokenClassificationTask:
             pad_token_label_id=-100,
             sequence_a_segment_id=0,
             mask_padding_with_zero=True,
-    ) -> List[InputFeatures]:
+    ):
         """Loads a data file into a list of `InputFeatures`
         `cls_token_at_end` define the location of the CLS token:
             - False (Default, BERT/XLM pattern): [CLS] + A + [SEP] + B + [SEP]
@@ -94,7 +95,7 @@ class TokenClassificationTask:
                 # bert-base-multilingual-cased sometimes output "nothing ([]) when calling tokenize with just a space.
                 if len(word_tokens) > 0:
                     tokens.extend(word_tokens)
-                    # Use the real label id for the first token of the word, and padding ids for the remaining tokens
+                    # Use the real label id for the first token of the word, and padding ids for the remaining tokens TODO
                     label_ids.extend([label_map[label]] + [pad_token_label_id] * (len(word_tokens) - 1))
 
             # Account for [CLS] and [SEP] with "- 2" and with "- 3" for RoBERTa.
@@ -179,7 +180,8 @@ class TokenClassificationTask:
                     input_ids=input_ids, attention_mask=input_mask, token_type_ids=segment_ids, label_ids=label_ids
                 )
             )
-        return features
+            examples[ex_index].tokens = tokens
+        return features, examples
 
 
 class NER(TokenClassificationTask):
@@ -277,7 +279,11 @@ if is_torch_available():
             # Load data features from cache or dataset file
             cached_features_file = os.path.join(
                 data_dir,
-                "cached_{}_{}_{}".format(mode.value, tokenizer.__class__.__name__, str(max_seq_length)),
+                "cached_{}_{}_{}_features".format(mode.value, tokenizer.__class__.__name__, str(max_seq_length)),
+            )
+            cached_examples_file = os.path.join(
+                data_dir,
+                "cached_{}_{}_{}_examples".format(mode.value, tokenizer.__class__.__name__, str(max_seq_length)),
             )
 
             # Make sure only the first process in distributed training processes the dataset,
@@ -285,14 +291,16 @@ if is_torch_available():
             lock_path = cached_features_file + ".lock"
             with FileLock(lock_path):
 
-                if os.path.exists(cached_features_file) and not overwrite_cache:
+                if os.path.exists(cached_features_file) and os.path.exists(cached_examples_file) and not overwrite_cache:
                     logger.info(f"Loading features from cached file {cached_features_file}")
                     self.features = torch.load(cached_features_file)
+                    logger.info(f"Loading examples from cached file {cached_examples_file}")
+                    self.examples = torch.load(cached_examples_file)
                 else:
                     logger.info(f"Creating features from dataset file at {data_dir}")
                     examples = token_classification_task.read_examples_from_file(data_dir, mode)
                     # TODO clean up all this to leverage built-in features of tokenizers
-                    self.features = token_classification_task.convert_examples_to_features(
+                    self.features, self.examples = token_classification_task.convert_examples_to_features(
                         examples,
                         labels,
                         max_seq_length,
@@ -311,6 +319,8 @@ if is_torch_available():
                     )
                     logger.info(f"Saving features into cached file {cached_features_file}")
                     torch.save(self.features, cached_features_file)
+                    logger.info(f"Saving examples into cached file {cached_examples_file}")
+                    torch.save(self.examples, cached_examples_file)
 
         def __len__(self):
             return len(self.features)
@@ -320,7 +330,8 @@ if is_torch_available():
 
 if __name__ == '__main__':
     # convert(Path(sys.argv[1]), Path(sys.argv[2]))
-    train_data = [os.path.join('data/ori_data/train', k) for k in os.listdir('data/ori_data/train')]
+    path = 'data/ori_data/train'
+    train_data = [os.path.join(path, k) for k in os.listdir(path) if not k.startswith('cached')]
     word_label_set = set()
     for file in train_data:
         with open(file, 'r') as f:

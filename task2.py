@@ -42,6 +42,8 @@ from transformers import (
 import random
 from task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
+from official_evaluation_task2 import task_2_eval_main, reimplemented_evaluate, write_to_scores
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -355,7 +357,7 @@ def main():
             "accuracy_score": accuracy_score(out_label_list, preds_list) * 100,
             "precision": precision_score(out_label_list, preds_list) * 100,
             "recall": recall_score(out_label_list, preds_list) * 100,
-            "f1": f1_score(out_label_list, preds_list) * 100,
+            "f1": f1_score(out_label_list, preds_list, average='macro') * 100,
         }
 
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
@@ -443,6 +445,20 @@ def main():
 
             trainer.log_metrics("test", metrics)
             trainer.save_metrics("test", metrics)
+
+        predictions, label_ids, metrics = trainer.predict(test_dataset)
+        preds_list, out_label_list = align_predictions(predictions, label_ids)
+        y_gold = sum(out_label_list, [])
+        y_pred = sum(preds_list, [])
+
+        if trainer.is_world_process_zero():
+            logger.info("running DEFT subtask2 Evaluation")
+            report = reimplemented_evaluate(y_gold=y_gold, y_pred=y_pred, eval_labels=(
+            'B-Term', 'I-Term', 'B-Definition', 'I-Definition', 'B-Alias-Term', 'I-Alias-Term',
+            'B-Referential-Definition', 'I-Referential-Definition', 'B-Referential-Term', 'I-Referential-Term',
+            'B-Qualifier', 'I-Qualifier'))
+            logger.info(report)
+            write_to_scores(report, Path(training_args.output_dir).joinpath('scores.txt'))
 
 
 def _mp_fn(index):
