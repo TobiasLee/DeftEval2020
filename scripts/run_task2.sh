@@ -7,9 +7,11 @@ EPOCH=10
 LR=3e-5
 MODEL=roberta-large
 BSZ=32
+LOSS_TYPE=FocalLoss
+LOSS_GAMMA=3
 
 
-OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ-$EPOCH-evallabels
+OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ-$EPOCH-${LOSS_TYPE}${LOSS_GAMMA}-evallabels
 CUDA_VISIBLE_DEVICES=$GPU python3 task2.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --test_dir $TEST_DIR \
