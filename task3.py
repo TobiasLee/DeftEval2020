@@ -23,7 +23,7 @@ from transformers import (
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score,classification_report ,precision_recall_fscore_support
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +282,8 @@ def main():
         preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds = np.argmax(preds, axis=1)
         return {'f1': f1_score(y_true=p.label_ids, y_pred=preds, average='macro'),
-                "accuracy": accuracy_score(y_true=p.label_ids, y_pred=preds)}
+                "accuracy": accuracy_score(y_true=p.label_ids, y_pred=preds),
+                }#"report": precision_recall_fscore_support(y_true=p.label_ids, y_pred=preds, average='macro')}
 
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
     if data_args.pad_to_max_length:
