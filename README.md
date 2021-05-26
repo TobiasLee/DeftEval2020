@@ -162,3 +162,4 @@ For the RoBERTa-base baseline, please run the script of `scripts/run_task3.sh`.
 - [DeftEval 2020 (SemEval 2020 - Task 6)](https://competitions.codalab.org/competitions/22759)
 - [adobe-research/deft_corpus](https://github.com/adobe-research/deft_corpus)
 - [Elzawawy/DeftEval](https://github.com/Elzawawy/DeftEval)
+- [TobiasLee/ChineseNER](https://github.com/TobiasLee/ChineseNER)
