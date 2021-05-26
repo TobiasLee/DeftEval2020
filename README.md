@@ -1,7 +1,7 @@
 # Deft Def Extraction
 Assignment for PKU Advanced Topics in Natural Language Processing 2021 spring.
 
-Deft Corpus Definition Extraction, SemEval2020 Task 6 
+Deft Corpus Definition Extraction, SemEval2020 Task 6. 
 
 ## Prepare environment
 ```
@@ -16,6 +16,8 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 Task of Sentence Classification: classify the sentences into 1 (contain a definition) or 0 (does not contain a definition).
 
 For the RoBERTa-large baseline, please run the script of `scripts/run_task1.sh`.
+
+![task1_format](figures/task1_format.png)
 
 ### Results
 
@@ -49,12 +51,14 @@ For the RoBERTa-large baseline, please run the script of `scripts/run_task1.sh`.
 | qa-suffix-RoBERTa-large | 0.8719 | 0.8022 | 0.3472 | 0.8051 | 0.7993 |
 
 
-
+![atention_vis](figures/attention_vis.png)
 
 ## Subtask 2
 Task of Sequence Labeling: tag words with label from [Term, Definition, Alias-Term, Referential-Definition, Referential-Term, Referential-Term, Qualifier, O].
 
 For the RoBERTa-large baseline, please run the script of `scripts/run_task2.sh`.
+
+![sequence_labeling](figures/sequence_labeling.png)
 
 #### Results on test
 ```
@@ -144,6 +148,8 @@ set training/dev/test/predicted label not in the eval_label_list to 'O'
 Task of Relation Classification: predict the relation between the `term` and the corresponding `Definition`.  
 
 For the RoBERTa-base baseline, please run the script of `scripts/run_task3.sh`.
+
+![relation_classification](figures/relation_classification.png)
 
 #### Results on test
 
