@@ -7,7 +7,7 @@ class DiceLoss(nn.Module):
     Useful in dealing with unbalanced data
     """
 
-    def __init__(self):
+    def __init__(self, ignore_index=-100):
         super(DiceLoss, self).__init__()
 
     def forward(self, input, target):
