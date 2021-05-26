@@ -52,58 +52,10 @@ RoBERTa-base, running script `run_task1.sh`
 ## Subtask 2
 #### Results on test
 ```
-RoBERTa-large
-max_sequence_length=64, epoch=3, lr=2e-5
-set predicted label not in the eval_label_list to 'O'
-```
-
-|                       | precision | recall | f1-score | support |
-| --------------------- | ---- | ---- | ---- | ---- |
-| B-Term | 0.7040 | 0.7630 | 0.7323 | 346 |
-| I-Term | 0.6847 | 0.7299 | 0.7066 | 485 |
-| B-Definition | 0.5988 | 0.6527 | 0.6246 | 311 |
-| I-Definition | 0.7224 | 0.7429 | 0.7325 | 4108 |
-| B-Alias-Term | 0.6316 | 0.6000 | 0.6154 | 40 |
-| I-Alias-Term | 0.2667 | 0.3750 | 0.3117 | 32 |
-| B-Referential-Definition | 0.5882 | 0.6250 | 0.6061 | 16 |
-| I-Referential-Definition | 0.7273 | 0.9091 | 0.8081 | 44 |
-| B-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 5 |
-| I-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 9 |
-| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
-| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
-| micro avg | 0.7053 | 0.7331 | 0.7190 | 5400 |
-| macro avg | 0.4103 | 0.4498 | 0.4281 | 5400 |
-| weighted avg | 0.7046 | 0.7331 | 0.7184 | 5400 |
-```
-RoBERTa-large
-max_sequence_length=64, epoch=3, lr=2e-5
-set training/dev/test/predicted label not in the eval_label_list to 'O'
-```
-
-|                       | precision | recall | f1-score | support |
-| --------------------- | ---- | ---- | ---- | ---- |
-| B-Term | 0.7492 | 0.6821 | 0.7141 | 346 |
-| I-Term | 0.6996 | 0.6433 | 0.6702 | 485 |
-| B-Definition | 0.6702 | 0.6077 | 0.6374 | 311 |
-| I-Definition | 0.7448 | 0.7181 | 0.7312 | 4108 |
-| B-Alias-Term | 0.5769 | 0.7500 | 0.6522 | 40 |
-| I-Alias-Term | 0.3514 | 0.4062 | 0.3768 | 32 |
-| B-Referential-Definition | 0.6250 | 0.6250 | 0.6250 | 16 |
-| I-Referential-Definition | 0.7143 | 0.9091 | 0.8000 | 44 |
-| B-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 5 |
-| I-Referential-Term | 0.0000 | 0.0000 | 0.0000 | 9 |
-| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
-| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
-| O | 0.9113 | 0.9242 | 0.9177 | 16586 |
-| accuracy | 0.8691 |
-| macro avg | 0.4648 | 0.4820 | 0.4711 | 21986 |
-| weighted avg | 0.8668 | 0.8691 | 0.8678 | 21986 |
-```
-RoBERTa-large
 max_sequence_length=128, epoch=10, lr=3e-5
 set training/dev/test/predicted label not in the eval_label_list to 'O'
 ```
-
+##### RoBERTa-large
 |                       | precision | recall | f1-score | support |
 | --------------------- | ---- | ---- | ---- | ---- |
 | B-Term | 0.7419 | 0.7270 | 0.7344 | 348 |
@@ -123,6 +75,64 @@ set training/dev/test/predicted label not in the eval_label_list to 'O'
 | macro avg | 0.5054 | 0.5654 | 0.5286 | 22417 |
 | weighted avg | 0.8834 | 0.8825 | 0.8828 | 22417 |
 
+##### RoBERTa-large + FocalLoss-1
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7658 | 0.6954 | 0.7289 | 348 |
+| I-Term | 0.7070 | 0.5996 | 0.6489 | 487 |
+| B-Definition | 0.6971 | 0.6122 | 0.6519 | 312 |
+| I-Definition | 0.7736 | 0.6943 | 0.7318 | 4184 |
+| B-Alias-Term | 0.7073 | 0.7250 | 0.7160 | 40 |
+| I-Alias-Term | 0.3600 | 0.5625 | 0.4390 | 32 |
+| B-Referential-Definition | 0.7500 | 0.7500 | 0.7500 | 16 |
+| I-Referential-Definition | 0.7083 | 0.7727 | 0.7391 | 44 |
+| B-Referential-Term | 0.2000 | 0.4000 | 0.2667 | 5 |
+| I-Referential-Term | 0.1250 | 0.1111 | 0.1176 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
+| O | 0.9076 | 0.9370 | 0.9221 | 16936 |
+| accuracy | 0.8741 |
+| macro avg | 0.5155 | 0.5277 | 0.5163 | 22417 |
+| weighted avg | 0.8709 | 0.8741 | 0.8717 | 22417 |
+
+##### RoBERTa-large + FocalLoss-2
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7422 | 0.7529 | 0.7475 | 348 |
+| I-Term | 0.7489 | 0.6982 | 0.7226 | 487 |
+| B-Definition | 0.6643 | 0.6090 | 0.6355 | 312 |
+| I-Definition | 0.7694 | 0.6931 | 0.7293 | 4184 |
+| B-Alias-Term | 0.6809 | 0.8000 | 0.7356 | 40 |
+| I-Alias-Term | 0.3226 | 0.3125 | 0.3175 | 32 |
+| B-Referential-Definition | 0.6667 | 0.6250 | 0.6452 | 16 |
+| I-Referential-Definition | 0.7111 | 0.7273 | 0.7191 | 44 |
+| B-Referential-Term | 0.1429 | 0.4000 | 0.2105 | 5 |
+| I-Referential-Term | 0.0667 | 0.1111 | 0.0833 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0000 | 0.0000 | 0.0000 | 3 |
+| O | 0.9107 | 0.9348 | 0.9226 | 16936 |
+| accuracy | 0.8748 |
+| macro avg | 0.4943 | 0.5126 | 0.4976 | 22417 |
+| weighted avg | 0.8723 | 0.8748 | 0.8730 | 22417 |
+##### RoBERTa-large + FocalLoss-3
+|                       | precision | recall | f1-score | support |
+| --------------------- | ---- | ---- | ---- | ---- |
+| B-Term | 0.7993 | 0.6753 | 0.7321 | 348 |
+| I-Term | 0.7488 | 0.6550 | 0.6988 | 487 |
+| B-Definition | 0.6832 | 0.5737 | 0.6237 | 312 |
+| I-Definition | 0.7779 | 0.7058 | 0.7401 | 4184 |
+| B-Alias-Term | 0.6098 | 0.6250 | 0.6173 | 40 |
+| I-Alias-Term | 0.3611 | 0.4062 | 0.3824 | 32 |
+| B-Referential-Definition | 0.4545 | 0.6250 | 0.5263 | 16 |
+| I-Referential-Definition | 0.6415 | 0.7727 | 0.7010 | 44 |
+| B-Referential-Term | 0.2000 | 0.4000 | 0.2667 | 5 |
+| I-Referential-Term | 0.0769 | 0.1111 | 0.0909 | 9 |
+| B-Qualifier | 0.0000 | 0.0000 | 0.0000 | 1 |
+| I-Qualifier | 0.0370 | 0.3333 | 0.0667 | 3 |
+| O | 0.9121 | 0.9389 | 0.9253 | 16936 |
+| accuracy | 0.8776 |
+| macro avg | 0.4848 | 0.5248 | 0.4901 | 22417 |
+| weighted avg | 0.8757 | 0.8776 | 0.8759 | 22417 |
 
 ##  Subtask3 
 #### Results on test

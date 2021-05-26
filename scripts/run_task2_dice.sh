@@ -1,4 +1,4 @@
-GPU="4,5,6,7"
+GPU="0,1,2,3"
 TRAIN_DIR=data/ori_data/train
 DEV_DIR=data/ori_data/dev
 TEST_DIR=data/subtask2/test
@@ -7,20 +7,17 @@ EPOCH=10
 LR=3e-5
 MODEL=roberta-large
 BSZ=32
-LOSS_TYPE=FocalLoss
-LOSS_GAMMA=2
+LOSS_TYPE=DiceLoss
 
 
-OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ-$EPOCH-${LOSS_TYPE}${LOSS_GAMMA}-evallabels
+OUTPUT_DIR=results/subtask2-$MODEL-$LR-$BSZ-$EPOCH-${LOSS_TYPE}-evallabels
 CUDA_VISIBLE_DEVICES=$GPU python3 task2.py --train_dir $TRAIN_DIR \
          --dev_dir $DEV_DIR \
          --test_dir $TEST_DIR \
-         --overwrite_cache \
          --num_train_epochs $EPOCH \
          --output_dir $OUTPUT_DIR \
          --model_name_or_path $MODEL  \
          --loss_type $LOSS_TYPE \
-         --loss_gamma $LOSS_GAMMA \
          --learning_rate $LR --evaluation_strategy steps \
          --metric_for_best_model "f1" \
          --load_best_model_at_end \

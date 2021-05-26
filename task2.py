@@ -95,7 +95,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     max_seq_length: int = field(
-        default=64,
+        default=128,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
                     "than this will be truncated, sequences shorter will be padded."
@@ -179,7 +179,7 @@ class TrainerWithSpecifiedLoss(Trainer):
         else:
             raise ValueError("Doesn't support such loss type")
 
-    def compute_loss(self, model, inputs):
+    def compute_loss(self, model, inputs, return_outputs=False):
         outputs = model(**inputs)
         logits = outputs[1]  # [bsz, max_token_len, class_num]
         labels = inputs['labels']  # [bsz, max_token_len]
@@ -196,7 +196,7 @@ class TrainerWithSpecifiedLoss(Trainer):
                 loss = self.loss_fct(active_logits, active_labels)
             else:
                 loss = self.loss_fct(logits.view(-1, model.module.num_labels), labels.view(-1))
-        return loss
+        return (loss, outputs) if return_outputs else loss
 
 
 def main():
@@ -360,35 +360,15 @@ def main():
             "f1": f1_score(out_label_list, preds_list, average='macro') * 100,
         }
 
-    # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
-    if data_args.pad_to_max_length:
-        data_collator = default_data_collator
-    elif training_args.fp16:
-        data_collator = DataCollatorForTokenClassification(tokenizer, pad_to_multiple_of=8)
-    else:
-        data_collator = None
-
-    # Initialize our Trainer
-    trainer = Trainer(
+    trainer = TrainerWithSpecifiedLoss(
         model=model,
         args=training_args,
         train_dataset=train_dataset if training_args.do_train else None,
         eval_dataset=eval_dataset if training_args.do_eval else None,
         compute_metrics=compute_metrics,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
+        loss_type=model_args.loss_type,
+        loss_gamma=model_args.loss_gamma,
     )
-    # trainer = TrainerWithSpecifiedLoss(
-    #     model=model,
-    #     args=training_args,
-    #     train_dataset=train_dataset if training_args.do_train else None,
-    #     eval_dataset=eval_dataset if training_args.do_eval else None,
-    #     compute_metrics=compute_metrics,
-    #     loss_type=model_args.loss_type,
-    #     loss_gamma=model_args.loss_gamma,
-    #     tokenizer=tokenizer,
-    #     data_collator=data_collator,
-    # )
 
     # Training
     if training_args.do_train:
