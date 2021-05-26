@@ -1,4 +1,5 @@
 # Deft Def Extraction
+Assignment for PKU Advanced Topics in Natural Language Processing 2021 spring.
 Deft Corpus Definition Extraction, SemEval2020 Task 6 
 
 ## Prepare environment
@@ -11,9 +12,9 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ## Subtask 1
 
-Sentence Classification, classify the sentences into 1 (contain a definition) or 0 (does not contain a definition)
+Task of Sentence Classification: classify the sentences into 1 (contain a definition) or 0 (does not contain a definition).
 
-RoBERTa-base, running script `run_task1.sh`
+For the RoBERTa-large baseline, please run the script of `scripts/run_task1.sh`.
 
 ### Results
 
@@ -50,6 +51,10 @@ RoBERTa-base, running script `run_task1.sh`
 
 
 ## Subtask 2
+Task of Sequence Labeling: tag words with label from [Term, Definition, Alias-Term, Referential-Definition, Referential-Term, Referential-Term, Qualifier, O].
+
+For the RoBERTa-large baseline, please run the script of `scripts/run_task2.sh`.
+
 #### Results on test
 ```
 max_sequence_length=128, epoch=10, lr=3e-5
@@ -135,6 +140,10 @@ set training/dev/test/predicted label not in the eval_label_list to 'O'
 | weighted avg | 0.8757 | 0.8776 | 0.8759 | 22417 |
 
 ##  Subtask3 
+Task of Relation Classification: predict the relation between the `term` and the corresponding `Definition`.  
+
+For the RoBERTa-base baseline, please run the script of `scripts/run_task3.sh`.
+
 #### Results on test
 
 | Method |  F1-score | 
@@ -142,3 +151,7 @@ set training/dev/test/predicted label not in the eval_label_list to 'O'
 | RoBERTa-base-bsz16-epoch5-maxlen256| 0.924 |
 |RoBERTa-large-bsz4-epoch5-maxlen256|  0.8984     |
 
+## Acknowledgement
+- [DeftEval 2020 (SemEval 2020 - Task 6)](https://competitions.codalab.org/competitions/22759)
+- [adobe-research/deft_corpus](https://github.com/adobe-research/deft_corpus)
+- [Elzawawy/DeftEval](https://github.com/Elzawawy/DeftEval)
