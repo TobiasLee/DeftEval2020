@@ -1,7 +1,7 @@
-# Deft Def Extraction
+# DeftEval 2020: Definition extraction
 Assignment for PKU Advanced Topics in Natural Language Processing 2021 spring.
 
-Deft Corpus Definition Extraction, SemEval2020 Task 6. 
+DeftEval 2020 Definition Extraction, SemEval2020 Task 6. 
 
 ## Prepare environment
 ```
