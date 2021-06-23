@@ -18,15 +18,13 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
-from importlib import import_module
 from typing import Dict, List, Optional, Tuple
 import torch
 import numpy as np
 from seqeval.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch import nn
-from losses import DiceLoss, FocalLoss, LabelSmoothingCrossEntropy, CourageLoss
+from utils.losses import DiceLoss, FocalLoss, LabelSmoothingCrossEntropy, CourageLoss
 from torch.nn import CrossEntropyLoss
-from datasets import load_dataset, load_metric
 from transformers import (
     AutoConfig,
     AutoModelForTokenClassification,
@@ -36,13 +34,11 @@ from transformers import (
     Trainer,
     TrainingArguments,
     set_seed,
-    default_data_collator,
-    DataCollatorForTokenClassification,
 )
 import random
-from utils.task2_utils import Split, TokenClassificationTask, TokenClassificationDataset, NER, eval_labels
-from transformers.trainer_utils import get_last_checkpoint, is_main_process
-from utils.official_evaluation_task2 import task_2_eval_main, reimplemented_evaluate, write_to_scores
+from utils.task2_utils import Split, TokenClassificationDataset, NER, eval_labels
+from transformers.trainer_utils import get_last_checkpoint
+from utils.official_evaluation_task2 import reimplemented_evaluate, write_to_scores
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
