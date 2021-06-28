@@ -1,4 +1,4 @@
-GPU="2"
+GPU="0"
 
 TRAIN_FILE=data/subtask3/train.tsv
 DEV_FILE=data/subtask3/dev.tsv

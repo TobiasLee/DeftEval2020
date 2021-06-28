@@ -431,7 +431,7 @@ def main():
 
         if trainer.is_world_process_zero():
             logger.info("running DEFT subtask2 Evaluation")
-            print('| precision | recall | f1-score | support |')
+            print('| - | precision | recall | f1-score | support |')
             report = reimplemented_evaluate(y_gold=y_gold, y_pred=y_pred, eval_labels=eval_labels)
             for k, v in report.items():
                 if isinstance(v, dict):
