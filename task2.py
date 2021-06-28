@@ -183,15 +183,16 @@ class TrainerWithSpecifiedLoss(Trainer):
         loss = None
         if labels is not None:
             # Only keep active parts of the loss
+            num_labels = model.module.num_labels if isinstance(model, torch.nn.DataParallel) else model.num_labels
             if attention_mask is not None:
                 active_loss = attention_mask.view(-1) == 1
-                active_logits = logits.view(-1, model.module.num_labels)  # [bsz * max_token_len, class_num]
+                active_logits = logits.view(-1, num_labels)  # [bsz * max_token_len, class_num]
                 active_labels = torch.where(
                     active_loss, labels.view(-1), torch.tensor(self.loss_fct.ignore_index).type_as(labels)
                 )  # [bsz * max_token_len]
                 loss = self.loss_fct(active_logits, active_labels)
             else:
-                loss = self.loss_fct(logits.view(-1, model.module.num_labels), labels.view(-1))
+                loss = self.loss_fct(logits.view(-1, num_labels), labels.view(-1))
         return (loss, outputs) if return_outputs else loss
 
 
@@ -329,7 +330,8 @@ def main():
     # Log a few random samples from the training set:
     if training_args.do_train:
         for index in random.sample(range(len(train_dataset)), 3):
-            logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
+            logger.info(f"Sample {index} of the training"
+                        f" set: {train_dataset[index]}.")
 
     def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
         preds = np.argmax(predictions, axis=2)
@@ -429,6 +431,7 @@ def main():
 
         if trainer.is_world_process_zero():
             logger.info("running DEFT subtask2 Evaluation")
+            print('| precision | recall | f1-score | support |')
             report = reimplemented_evaluate(y_gold=y_gold, y_pred=y_pred, eval_labels=eval_labels)
             for k, v in report.items():
                 if isinstance(v, dict):
